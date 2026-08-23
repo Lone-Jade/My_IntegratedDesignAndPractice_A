@@ -1,0 +1,91 @@
+{
+	"kind" : "toolchains",
+	"toolchains" : 
+	[
+		{
+			"compiler" : 
+			{
+				"id" : "GNU",
+				"implicit" : {},
+				"path" : "/home/xiwei/dev-tools/xpack-arm-none-eabi-gcc-13.2.1-1.1/bin/arm-none-eabi-gcc",
+				"version" : ""
+			},
+			"language" : "ASM",
+			"sourceFileExtensions" : 
+			[
+				"s",
+				"S",
+				"asm"
+			]
+		},
+		{
+			"compiler" : 
+			{
+				"id" : "GNU",
+				"implicit" : 
+				{
+					"includeDirectories" : 
+					[
+						"/home/xiwei/dev-tools/xpack-arm-none-eabi-gcc-13.2.1-1.1/lib/gcc/arm-none-eabi/13.2.1/include",
+						"/home/xiwei/dev-tools/xpack-arm-none-eabi-gcc-13.2.1-1.1/lib/gcc/arm-none-eabi/13.2.1/include-fixed",
+						"/home/xiwei/dev-tools/xpack-arm-none-eabi-gcc-13.2.1-1.1/arm-none-eabi/include"
+					],
+					"linkDirectories" : [],
+					"linkFrameworkDirectories" : [],
+					"linkLibraries" : []
+				},
+				"path" : "/home/xiwei/dev-tools/xpack-arm-none-eabi-gcc-13.2.1-1.1/bin/arm-none-eabi-gcc",
+				"version" : "13.2.1"
+			},
+			"language" : "C",
+			"sourceFileExtensions" : 
+			[
+				"c",
+				"m"
+			]
+		},
+		{
+			"compiler" : 
+			{
+				"id" : "GNU",
+				"implicit" : 
+				{
+					"includeDirectories" : 
+					[
+						"/home/xiwei/dev-tools/xpack-arm-none-eabi-gcc-13.2.1-1.1/arm-none-eabi/include/c++/13.2.1",
+						"/home/xiwei/dev-tools/xpack-arm-none-eabi-gcc-13.2.1-1.1/arm-none-eabi/include/c++/13.2.1/arm-none-eabi/thumb/v6-m/nofp",
+						"/home/xiwei/dev-tools/xpack-arm-none-eabi-gcc-13.2.1-1.1/arm-none-eabi/include/c++/13.2.1/backward",
+						"/home/xiwei/dev-tools/xpack-arm-none-eabi-gcc-13.2.1-1.1/lib/gcc/arm-none-eabi/13.2.1/include",
+						"/home/xiwei/dev-tools/xpack-arm-none-eabi-gcc-13.2.1-1.1/lib/gcc/arm-none-eabi/13.2.1/include-fixed",
+						"/home/xiwei/dev-tools/xpack-arm-none-eabi-gcc-13.2.1-1.1/arm-none-eabi/include"
+					],
+					"linkDirectories" : [],
+					"linkFrameworkDirectories" : [],
+					"linkLibraries" : []
+				},
+				"path" : "/home/xiwei/dev-tools/xpack-arm-none-eabi-gcc-13.2.1-1.1/bin/arm-none-eabi-g++",
+				"version" : "13.2.1"
+			},
+			"language" : "CXX",
+			"sourceFileExtensions" : 
+			[
+				"C",
+				"M",
+				"c++",
+				"cc",
+				"cpp",
+				"cxx",
+				"mm",
+				"mpp",
+				"CPP",
+				"ixx",
+				"cppm"
+			]
+		}
+	],
+	"version" : 
+	{
+		"major" : 1,
+		"minor" : 0
+	}
+}
