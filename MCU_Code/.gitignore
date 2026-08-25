@@ -1,0 +1,38 @@
+# Build artifacts
+build/
+
+# Compiled objects / binaries
+*.o
+*.elf
+*.bin
+*.hex
+*.map
+*.lst
+
+# Editor / IDE
+.vscode/*.db
+.vscode/*.log
+
+# Python
+__pycache__/
+*.pyc
+
+# outputs
+outputs/*.csv
+outputs/*.png
+
+# datasets
+mnist/
+print/
+
+# matplotlib cache (created by train_digit.py via MPLCONFIGDIR)
+outputs/.mplcache/
+outputs/vendor/
+
+# ST Edge AI 验证/日志产物（可重新生成）
+outputs/st_ai_*/
+outputs/AIStudio_Logs/
+outputs/STM32G0B1_TEST_run-2_logs.txt
+
+# 调试器会话残留
+:memory:.ses
