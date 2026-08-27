@@ -1,8 +1,8 @@
 # AI_TCRT5000 — 文字识别器提交归档（STM32G0B1 + 8 路 TCRT5000）
 
-基于《综合实验》任务书的**文字识别器**项目：用 **8 个 TCRT5000 红外反射传感器**排成一条直线，通过**定时器分时驱动 + ADC 采集**扫描纸片上的数字字符，数据经 **USB 串口**上送 PC；PC 端重建图像并训练识别模型，模型经 **ST Edge AI 量化为 int8** 部署到板载 **STM32G0B1RBT6**，扫描完成后**直接在单片机上推理**，结果经 **LED 数码管显示**（置信度≥30%，保持 5s）并通过串口输出 0~9 各数字概率。
+基于《综合实验》任务书的**文字识别器**项目：用 **8 个 TCRT5000 红外反射传感器**排成一条直线，通过**定时器分时驱动 + ADC 采集**扫描纸片上的数字字符，数据经 **USB 串口**上送 PC；PC 端重建图像并训练识别模型，模型经 **ST Edge AI 量化为 int8** 部署到板载 **STM32G0B1RBT6**，扫描完成后**直接在单片机上推理**，结果经 **LED 数码管显示**（置信度≥30%，保持 5s）并通过串口输出 0-9 各数字概率。
 
-本仓库为按开发阶段整理的**提交归档**：每个目录是一份独立快照（含必要依赖，可单独使用），供提交/存档/评审使用；开发中的完整工程（含 outputs/、docs/、print/ 等与全部 Git 历史）见主仓库 `~/my_project_ZSA/AI_TRY_TCRT5000`。
+本仓库为按开发阶段整理的**提交归档**：每个目录是一份独立快照（含必要依赖，可单独使用），供提交/存档/评审使用；开发中的完整工程（含 outputs/、docs/、print/ 等与全部 Git 历史）见主仓库 `-/my_project_ZSA/AI_TRY_TCRT5000`。
 
 ---
 
@@ -18,7 +18,7 @@ flowchart TD
         ADC["ADC1 单通道转换<br/>PA0..PA7 逐路切换"]
         UART["USART1 115200<br/>21B 二进制帧 + [AI] 结果行"]
         AI["板载推理<br/>ST Edge AI int8 网络<br/>（ai_scan.c）"]
-        SEG["LED 数码管<br/>PB0~PB7 共阴"]
+        SEG["LED 数码管<br/>PB0-PB7 共阴"]
         TIM --> DRV --> ADC
         ADC --> UART
         UART --> AI
@@ -40,29 +40,27 @@ flowchart TD
     end
 ```
 
-| 环节   | 方案 |
-| ------ | ---- |
-| 传感器 | 8×TCRT5000（反射式红外），同一时刻仅 1 路发射管点亮（分时，消除串扰/低功耗） |
+| 环节   | 方案                                                                                       |
+| ------ | ------------------------------------------------------------------------------------------ |
+| 传感器 | 8×TCRT5000（反射式红外），同一时刻仅 1 路发射管点亮（分时，消除串扰/低功耗）              |
 | 采集   | ADC1 单通道转换（Scan Disabled），`HAL_ADC_ConfigChannel` 逐路切换；采样时间 79.5 cycles |
-| 节拍   | TIM6 2ms（CubeMX 配置：PSC=64-1, Period=1999），更新中断驱动 |
-| 传输   | USART1 115200，二进制帧 21B（行号 + 8×u16 + 校验和），一行 8 通道 = 16ms ≈ 62.5 行/秒 |
-| 推理   | ST Edge AI int8 网络（权重 22.4KB、激活 8KB），扫描完成自动板载推理 |
-| 显示   | 单 LED 数码管（PB0~PB7 共阴），置信度 ≥30% 显示预测数字并保持 5s |
+| 节拍   | TIM6 2ms（CubeMX 配置：PSC=64-1, Period=1999），更新中断驱动                               |
+| 传输   | USART1 115200，二进制帧 21B（行号 + 8×u16 + 校验和），一行 8 通道 = 16ms ≈ 62.5 行/秒    |
+| 推理   | ST Edge AI int8 网络（权重 22.4KB、激活 8KB），扫描完成自动板载推理                        |
+| 显示   | 单 LED 数码管（PB0-PB7 共阴），置信度 ≥30% 显示预测数字并保持 5s                          |
 
 ---
 
 ## 2. 仓库结构
 
-| 目录 | 内容 | 阶段/状态 |
-| --- | --- | --- |
-| `AI_TCRT5000_ScanData/` | **扫描部分**：采集固件工程（TIM6 分时驱动 + ADC + 串口二进制帧）+ 任务书/电路说明文档 | 第一阶段，已完成 ✅ |
-| `Dataset/` | **最新数据集**：0~9 各 30 个扫描 CSV（共 **300** 样本 = MNIST 打印体 01~20 + 10 种标准字体 21~30） | 最新版 |
-| `Model_v1/` | **第一版模型**：200 样本、随机 14/3/3 划分的训练/量化脚本 + C 模型 + 产物与可行性报告 | 历史存档（V1） |
-| `Model_v2/` | **最新版模型**：300 样本、固定划分 20/5/5 的训练/评估/量化脚本 + 第二轮 int8 C 模型 + 产物/数据/图片与报告 | 最新版（部署） |
-| `Python_Tools/` | **最新 Python 工具**：采集/渲染/打印稿/训练/评估/体检/量化/验证/显示 全套 12 个 | 最新版 |
-| `AI_TCRT5000_CHAR_RECOGNITION/` | **最新单片机工程**：当前完整固件（采集 + 板载推理 + 数码管显示，可构建），CubeMX 工程 `AI_TCRT5000_CHAR_RECOGNITION.ioc` | 最新版（部署固件） |
-
-> 旧目录名 `MCU_Code` 已更名为 `AI_TCRT5000_CHAR_RECOGNITION`（commit `a485e95`）；模型目录内部分文档仍沿用旧名，均指向同一内容。
+| 目录                              | 内容                                                                                                                             | 阶段/状态           |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| `AI_TCRT5000_ScanData/`         | **扫描部分**：采集固件工程（TIM6 分时驱动 + ADC + 串口二进制帧）+ 任务书/电路说明文档                                      | 第一阶段，已完成 ✅ |
+| `Dataset/`                      | **最新数据集**：0-9 各 30 个扫描 CSV（共 **300** 样本 = MNIST 打印体 01-20 + 10 种标准字体 21-30）                   | 最新版              |
+| `Model_v1/`                     | **第一版模型**：200 样本、随机 14/3/3 划分的训练/量化脚本 + C 模型 + 产物与可行性报告                                      | 历史存档（V1）      |
+| `Model_v2/`                     | **最新版模型**：300 样本、固定划分 20/5/5 的训练/评估/量化脚本 + 第二轮 int8 C 模型 + 产物/数据/图片与报告                 | 最新版（部署）      |
+| `Python_Tools/`                 | **最新 Python 工具**：采集/渲染/打印稿/训练/评估/体检/量化/验证/显示 全套 12 个                                            | 最新版              |
+| `AI_TCRT5000_CHAR_RECOGNITION/` | **最新单片机工程**：当前完整固件（采集 + 板载推理 + 数码管显示，可构建），CubeMX 工程 `AI_TCRT5000_CHAR_RECOGNITION.ioc` | 最新版（部署固件）  |
 
 ---
 
@@ -78,16 +76,16 @@ flowchart TD
 
 ### 3.2 Dataset — 数据集（300 样本）
 
-`datasets/<digit>_scan/<digit>-NN.csv`：数字 0~9 各 30 个，共 **300 个扫描样本**。
+`datasets/<digit>_scan/<digit>-NN.csv`：数字 0-9 各 30 个，共 **300 个扫描样本**。
 
-- 每文件 = 一张独立纸片的一次扫描（8 通道 ADC 原始值 0~4095；白纸=低值、黑墨=高值），行格式 `row,ch0..ch7`，行数 22~118（人工扫描快慢不同）；
-- 命名：`NN = 01~20` 为 **MNIST 打印体**，`21~30` 为 **10 种标准字体**（DejaVu/Liberation/URW/C059 等，`make_print_sheet_fonts.py` 生成打印稿后扫描）；
+- 每文件 = 一张独立纸片的一次扫描（8 通道 ADC 原始值 0-4095；白纸=低值、黑墨=高值），行格式 `row,ch0..ch7`，行数 22-118（人工扫描快慢不同）；
+- 命名：`NN = 01-20` 为 **MNIST 打印体**，`21-30` 为 **10 种标准字体**（DejaVu/Liberation/URW/C059 等，`make_print_sheet_fonts.py` 生成打印稿后扫描）；
 - **固定划分**（新旧字体按比例混入各集合）：训练 = 1-14 + 21-26、验证 = 15-17 + 27-28、测试 = 18-20 + 29-30（每类 20/5/5），划分清单见 `Model_v2/artifacts/split_fixed.json`；
 - 质量复检：`Python_Tools/tools/check_samples.py`（黑边/墨量/截断/留出误判分析）。
 
 ### 3.3 Model_v1 — 第一版模型（历史存档）
 
-200 样本、**随机 14/3/3** 划分，对应主仓库提交 ab5cc66 ~ ba4d883：
+200 样本、**随机 14/3/3** 划分，对应主仓库提交 ab5cc66 - ba4d883：
 
 - `python/`：`train_digit.py`（PyTorch 微型 CNN 22.6k 参数 + LS/WD + 集成 + ONNX 导出）、`preprocess.py`、`quantize_onnx.py`、`export_ai_studio_data.py`、`check_samples.py`
 - `c/`：ST Edge AI 生成的 int8 C 模型（`Network/`）+ 运行时（`Middlewares/ST/AI/`）
@@ -100,27 +98,27 @@ flowchart TD
 
 - `python/`：`train_digit.py`（`--split fixed` + LS/WD + 5 seed 集成 + ONNX 导出）、`preprocess.py`、`eval_model.py`、`check_samples.py`、`export_ai_studio_data.py`、`quantize_onnx.py`
 - `c/`：**第二轮 `stedgeai generate-2` 生成的 int8 网络**（`Network/`，权重 22,928B）+ 运行时（`Middlewares/ST/AI/`）
-- `artifacts/`：`model_best.pt`（部署模型 seed 1042）、`models_seed{42,1042,2042,3042,4042}.pt`（5 个集成模型）、`model.onnx`/`model_best.onnx`/`model_best_int8.onnx`、`ai_studio_test.npz`、`split_fixed.json`、`summary_fixed_repeats.json`/`summary_fixed_ensemble.json`/`train_summary.json`、`training_log.csv`、`curves.png`/`confusion_matrix.png`/`preprocess_grid.png`、`识别可行性测试报告.md`（含第一轮 §1~§9 与第二轮 §10~§11）
+- `artifacts/`：`model_best.pt`（部署模型 seed 1042）、`models_seed{42,1042,2042,3042,4042}.pt`（5 个集成模型）、`model.onnx`/`model_best.onnx`/`model_best_int8.onnx`、`ai_studio_test.npz`、`split_fixed.json`、`summary_fixed_repeats.json`/`summary_fixed_ensemble.json`/`train_summary.json`、`training_log.csv`、`curves.png`/`confusion_matrix.png`/`preprocess_grid.png`、`识别可行性测试报告.md`（含第一轮 §1-§9 与第二轮 §10-§11）
 - 结果：5 seed 测试 **81.2%±1.0%**、多数投票 **88.0%**；部署模型测试 **82.0%**（50 样本）；新字体（域外）识别 **94%**；int8 零精度损失（stedgeai validate：rmse=0、nse=1.0、cos=1.0）。
 
 ### 3.5 Python_Tools — 工具链（12 个）
 
 与主仓库 `tools/` 一致的最新版：
 
-| 工具 | 功能 |
-| --- | --- |
-| `scan_view.py` | 串口采集 + 按"数据恢复 4095"自动分段，每字符存一个 CSV |
-| `show_scan.py` | CSV 渲染颜色深度图（`--thresh` 纯黑白二值化） |
-| `make_print_sheet.py` | MNIST 打印稿生成（反色 + 加粗 + A4 排版；torchvision/gz 双数据源） |
-| `make_print_sheet_fonts.py` | **字体版打印稿生成**（10 种系统标准字体，编号 x-21~x-30） |
-| `check_quality.py` | 扫描 CSV 质量体检（早期版本） |
-| `preprocess.py` | 预处理管线：无纸电平黑边 v2 裁剪 + 固定高度重采样（32×8）+ 逐样本归一化 + 增强 |
-| `train_digit.py` | PyTorch 微型 CNN 训练 0~9（固定划分 + LS/WD + 多 seed 集成 + ONNX 导出） |
-| `eval_model.py` | 用已训练模型评估指定扫描集（新数据复测） |
-| `check_samples.py` | 样本质量体检 + 留出误判分析（建议重扫清单） |
-| `export_ai_studio_data.py` | 导出 ST Edge AI 验证 .npz（x_test + one-hot y_test，形状 (N,1,1,10)） |
-| `quantize_onnx.py` | ONNX int8 QDQ 静态量化（→ model_best_int8.onnx） |
-| `show_prediction.py` | 串口监听，解析 `[AI]` 概率行，终端条形图显示预测 + 历史 |
+| 工具                          | 功能                                                                            |
+| ----------------------------- | ------------------------------------------------------------------------------- |
+| `scan_view.py`              | 串口采集 + 按"数据恢复 4095"自动分段，每字符存一个 CSV                          |
+| `show_scan.py`              | CSV 渲染颜色深度图（`--thresh` 纯黑白二值化）                                 |
+| `make_print_sheet.py`       | MNIST 打印稿生成（反色 + 加粗 + A4 排版；torchvision/gz 双数据源）              |
+| `make_print_sheet_fonts.py` | **字体版打印稿生成**（10 种系统标准字体，编号 x-21-x-30）                 |
+| `check_quality.py`          | 扫描 CSV 质量体检（早期版本）                                                   |
+| `preprocess.py`             | 预处理管线：无纸电平黑边 v2 裁剪 + 固定高度重采样（32×8）+ 逐样本归一化 + 增强 |
+| `train_digit.py`            | PyTorch 微型 CNN 训练 0-9（固定划分 + LS/WD + 多 seed 集成 + ONNX 导出）        |
+| `eval_model.py`             | 用已训练模型评估指定扫描集（新数据复测）                                        |
+| `check_samples.py`          | 样本质量体检 + 留出误判分析（建议重扫清单）                                     |
+| `export_ai_studio_data.py`  | 导出 ST Edge AI 验证 .npz（x_test + one-hot y_test，形状 (N,1,1,10)）           |
+| `quantize_onnx.py`          | ONNX int8 QDQ 静态量化（→ model_best_int8.onnx）                               |
+| `show_prediction.py`        | 串口监听，解析`[AI]` 概率行，终端条形图显示预测 + 历史                        |
 
 依赖：numpy / torch(CPU) / matplotlib / pyserial / onnx / onnxruntime（按需）。
 
@@ -130,7 +128,7 @@ flowchart TD
 
 - `Core/Src/main.c`：采样主循环（TIM6 分时驱动 + ADC 采集 + 二进制帧上送）
 - `Core/Src/ai_scan.c`：**板载 AI 模块**——扫描缓冲/结束检测、预处理（黑边裁剪→重采样 32 行→归一化→int8 量化）、`stai_network_run` 推理、softmax、串口概率输出、数码管驱动
-- `Core/Src/seg_display.c`：单 LED 数码管驱动（PB0~PB7 共阴）
+- `Core/Src/seg_display.c`：单 LED 数码管驱动（PB0-PB7 共阴）
 - `Network/`：ST Edge AI 生成的 int8 网络（2026-08-27 generate-2，权重 22.4KB）
 - `Middlewares/ST/AI/`：ST Edge AI 运行时（头文件 + CM0+ 运行库）
 - `ref/AI_TRY_SEG/`：数码管参考工程
@@ -145,21 +143,21 @@ flowchart TD
 
 ### 4.1 第一版 vs 最新版对比
 
-| 指标 | Model_v1（200 样本，随机 14/3/3） | Model_v2（300 样本，固定 20/5/5） |
-| --- | --- | --- |
-| 测试集规模 | 30 样本 | 50 样本 |
-| 单模型测试均值 | 81.3% ± 6.5% | 81.2% ± 1.0% |
-| 多数投票（PC 端） | 83.3% | **88.0%** |
-| 部署模型测试 | 76.67% | **82.0%** |
-| 新字体（域外）识别 | 16% / 52% | **94%** |
-| int8 部署精度损失 | 零 | 零 |
-| 固件资源（Flash / RAM） | 53.1% / 12.0% | 53.10% / 12.04% |
+| 指标                    | Model_v1（200 样本，随机 14/3/3） | Model_v2（300 样本，固定 20/5/5） |
+| ----------------------- | --------------------------------- | --------------------------------- |
+| 测试集规模              | 30 样本                           | 50 样本                           |
+| 单模型测试均值          | 81.3% ± 6.5%                     | 81.2% ± 1.0%                     |
+| 多数投票（PC 端）       | 83.3%                             | **88.0%**                   |
+| 部署模型测试            | 76.67%                            | **82.0%**                   |
+| 新字体（域外）识别      | 16% / 52%                         | **94%**                     |
+| int8 部署精度损失       | 零                                | 零                                |
+| 固件资源（Flash / RAM） | 53.1% / 12.0%                     | 53.10% / 12.04%                   |
 
 ### 4.2 关键结论
 
-- **采集链路完整可用**：8 路传感器读数正常（白纸=低值 ~764~1500，黑墨=高值 ~4095）；实测扫描 96 行/字符，帧同步/校验和/自动分段全部验证通过；
+- **采集链路完整可用**：8 路传感器读数正常（白纸=低值 -764-1500，黑墨=高值 -4095）；实测扫描 96 行/字符，帧同步/校验和/自动分段全部验证通过；
 - **PC 识别训练可行**：固定划分（新旧字体混合）5 seed 重复实验测试 **81.2%±1.0%**，多 seed 投票 **88.0%**；
-- **字体域偏移已解决**：旧模型（仅 MNIST 打印体训练）识别新字体版样本仅 **16%（0~4）/ 52%（5~9）**；固定划分新旧字体混合重训后，部署模型对新字体样本识别率 **94%**；
+- **字体域偏移已解决**：旧模型（仅 MNIST 打印体训练）识别新字体版样本仅 **16%（0-4）/ 52%（5-9）**；固定划分新旧字体混合重训后，部署模型对新字体样本识别率 **94%**；
 - **板载部署验证通过**：int8 量化零精度损失（权重 22.4KB、激活 8KB），`stedgeai validate` 50 样本 **82.0%**，C 模型与参考模型数值一致（rmse=0、nse=1.0、cos=1.0）；固件 Flash 53.10% / RAM 12.04%；
 - 完整测试报告见 `Model_v2/artifacts/识别可行性测试报告.md`。
 
@@ -230,33 +228,4 @@ python3 Python_Tools/tools/show_prediction.py /dev/ttyUSB0
 [AI] rows=56 best=9:94% | 0:0% 1:0% 2:0% 3:0% 4:0% 5:1% 6:0% 7:0% 8:5% 9:94%
 ```
 
-`rows` = 扫描行数（裁剪前），`best` = 置信最高数字，其后为 0~9 的预测概率（整数百分比）。
-
----
-
-## 7. 版本记录（本归档仓库）
-
-```
-a485e95 重命名工程为 AI_TCRT5000_CHAR_RECOGNITION：MCU_Code 更名为 AI_TCRT5000_CHAR_RECOGNITION 并重建固件（Flash 53.10% / RAM 12.04%）
-0eecae7 重命名工程为 AI_TCRT5000_Char_Recognition：更新 .ioc 文件名及内部 ProjectName/ProjectFileName
-5e616fa 新增项目配置文件：添加 .mxproject、launch.json 和 settings.json 文件以支持调试和构建配置
-611e607 更新至第二版（V2）：300 样本数据集 + Model_v2 模型 + 第二轮 int8 固件
-33a8c5a 重命名工程为 AI_TCRT5000_ScanData：更新工程名与构建/调试配置，移除旧构建产物
-50e89dd 第一版提交归档：扫描部分文档 + 模型v1 + 单片机代码 + 数据集 + Python工具
-02c721a add Scan code
-```
-
-主仓库开发历史（`~/my_project_ZSA/AI_TRY_TCRT5000`）对应关系：扫描 a55f613 → V1 模型 ab5cc66~ba4d883 → 板载推理 70b8246 → 固定划分重训 5553da2/56390ac → 第二轮部署固件 314c0c0。
-
----
-
-## 8. 与主仓库的关系
-
-| 项 | 本仓库（Submission） | 主仓库（AI_TRY_TCRT5000） |
-| --- | --- | --- |
-| 定位 | 按开发阶段整理的**提交归档**，供提交/存档/评审 | 开发中的**完整工程**（含 outputs/、docs/、print/、mnist/ 等与全部 Git 历史） |
-| 内容 | 每个目录为独立快照，含必要依赖，可单独使用 | 连续演进，最新状态 |
-| 固件 | `AI_TCRT5000_CHAR_RECOGNITION/`（快照） | 最新固件 + 模型 + 工具 + 数据 |
-| 用途 | 提交作业/存档 | 日常开发 |
-
-> 各目录内 README 标注了对应的主仓库提交号，可据此追溯每个快照在开发历史中的位置。
+`rows` = 扫描行数（裁剪前），`best` = 置信最高数字，其后为 0-9 的预测概率（整数百分比）。
