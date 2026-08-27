@@ -21,6 +21,10 @@ __pycache__/
 outputs/*.csv
 outputs/*.png
 
+# 采集残留/未分段的散落扫描（从 datasets/ 移出，仅本地保留）
+outputs/scan_leftovers/
+outputs/train_log*.txt
+
 # datasets
 mnist/
 print/
@@ -36,3 +40,6 @@ outputs/STM32G0B1_TEST_run-2_logs.txt
 
 # 调试器会话残留
 :memory:.ses
+
+# ST Edge AI 生成的信息文件（buffer 布局等，可重新生成）
+.ai/
