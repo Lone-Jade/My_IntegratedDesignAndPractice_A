@@ -6,7 +6,7 @@
     "configurations": [
         {
             "cwd": "${workspaceRoot}",
-            "executable": "./build/Debug/AI_TRY_TCRT5000.elf",
+            "executable": "./build/Debug/AI_TCRT5000_CHAR_RECOGNITION.elf",
             "name": "Debug with OpenOCD",
             "request": "launch",
             "type": "cortex-debug",
