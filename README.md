@@ -87,7 +87,7 @@ My_IntegratedDesignAndPractice_A/
 │   └── AI_PCB_SCH.kicad_{pro,sch,pcb,dru,prl}
 │
 └── video/                                 # 演示视频与结果
-    ├── 测试视频.mp4                       # 实测演示
+    ├── 测试视频.mp4                       # 实测演示（可在Relesaes查看）
     └── results.xlsx                       # 结果汇总表
 ```
 
