@@ -59,8 +59,7 @@ My_IntegratedDesignAndPractice_A/
 │
 ├── AI_TCRT5000_ScanData/                  # 扫描部分（第一阶段，已完成 ✅）
 │   ├── Core/                              # 采集固件：TIM6 分时驱动 + ADC + 串口二进制帧
-│   ├── Drivers/  cmake/  *.ioc  *.ld  startup*.s
-│   └── docs/                              # 任务书、传感器测试任务书/电路连接说明
+│   └── Drivers/  cmake/  *.ioc  *.ld  startup*.s   
 │
 ├── Dataset/                               # 最新数据集：0-9 各 30 个 = 300 个扫描 CSV
 │   └── datasets/<digit>_scan/             # <digit>-NN.csv（01-20 MNIST 打印体 / 21-30 标准字体）
