@@ -53,14 +53,44 @@ flowchart TD
 
 ## 2. 仓库结构
 
-| 目录                              | 内容                                                                                                                             | 阶段/状态           |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
-| `AI_TCRT5000_ScanData/`         | **扫描部分**：采集固件工程（TIM6 分时驱动 + ADC + 串口二进制帧）+ 任务书/电路说明文档                                      | 第一阶段，已完成 ✅ |
-| `Dataset/`                      | **最新数据集**：0-9 各 30 个扫描 CSV（共 **300** 样本 = MNIST 打印体 01-20 + 10 种标准字体 21-30）                   | 最新版              |
-| `Model_v1/`                     | **第一版模型**：200 样本、随机 14/3/3 划分的训练/量化脚本 + C 模型 + 产物与可行性报告                                      | 历史存档（V1）      |
-| `Model_v2/`                     | **最新版模型**：300 样本、固定划分 20/5/5 的训练/评估/量化脚本 + 第二轮 int8 C 模型 + 产物/数据/图片与报告                 | 最新版（部署）      |
-| `Python_Tools/`                 | **最新 Python 工具**：采集/渲染/打印稿/训练/评估/体检/量化/验证/显示 全套 12 个                                            | 最新版              |
-| `AI_TCRT5000_CHAR_RECOGNITION/` | **最新单片机工程**：当前完整固件（采集 + 板载推理 + 数码管显示，可构建），CubeMX 工程 `AI_TCRT5000_CHAR_RECOGNITION.ioc` | 最新版（部署固件）  |
+```text
+My_IntegratedDesignAndPractice_A/
+├── README.md                              # 仓库总览（本文件）
+│
+├── AI_TCRT5000_ScanData/                  # 扫描部分（第一阶段，已完成 ✅）
+│   ├── Core/                              # 采集固件：TIM6 分时驱动 + ADC + 串口二进制帧
+│   ├── Drivers/  cmake/  *.ioc  *.ld  startup*.s
+│   └── docs/                              # 任务书、传感器测试任务书/电路连接说明
+│
+├── Dataset/                               # 最新数据集：0-9 各 30 个 = 300 个扫描 CSV
+│   └── datasets/<digit>_scan/             # <digit>-NN.csv（01-20 MNIST 打印体 / 21-30 标准字体）
+│
+├── Model_v1/                              # 第一版模型（历史存档，200 样本、随机 14/3/3）
+│   ├── python/                            # 训练/预处理/量化/导出/检查脚本
+│   ├── c/                                 # ST Edge AI int8 C 模型（Network/）+ 运行时
+│   └── artifacts/                         # 模型产物、训练曲线/混淆矩阵、可行性测试报告
+│
+├── Model_v2/                              # 最新版模型（部署，300 样本、固定 20/5/5）
+│   ├── python/                            # 训练/评估/预处理/量化/导出/检查脚本
+│   ├── c/                                 # 第二轮 int8 C 模型（generate-2）+ 运行时
+│   └── artifacts/                         # 部署模型、int8 ONNX、划分清单、报告与图片
+│
+├── Python_Tools/                          # 最新 Python 工具链（12 个）
+│   └── tools/                             # 采集/渲染/打印稿/训练/评估/体检/量化/验证/显示
+│
+├── AI_TCRT5000_CHAR_RECOGNITION/          # 最新单片机工程（采集 + 板载推理 + 数码管，可构建）
+│   ├── Core/                              # main.c / ai_scan.c / seg_display.c 等
+│   ├── Network/                           # ST Edge AI int8 网络（5 个文件）
+│   ├── Middlewares/ST/AI/                 # ST Edge AI 运行时（头文件 + CM0+ 运行库）
+│   └── *.ioc  cmake/  CMakeLists.txt  ... # CubeMX 工程与 CMake 构建/调试配置
+│
+├── Kicad/                                 # 硬件电路：原理图 + PCB（KiCad 工程 AI_PCB_SCH）
+│   └── AI_PCB_SCH.kicad_{pro,sch,pcb,dru,prl}
+│
+└── video/                                 # 演示视频与结果
+    ├── 测试视频.mp4                       # 实测演示
+    └── results.xlsx                       # 结果汇总表
+```
 
 ---
 
@@ -68,7 +98,7 @@ flowchart TD
 
 ### 3.1 AI_TCRT5000_ScanData — 扫描部分（第一阶段）
 
-数据采集阶段快照，对应主仓库提交 a55f613：
+数据采集阶段快照：
 
 - `Core/`：采集固件（`main.c` 分时驱动 / ADC 采集 / 二进制帧组帧；tim/adc/usart/gpio 由 CubeMX 生成）
 - `Drivers/ cmake/ *.ioc *.ld startup`：CubeMX 工程与 CMake 构建配置
@@ -85,7 +115,7 @@ flowchart TD
 
 ### 3.3 Model_v1 — 第一版模型（历史存档）
 
-200 样本、**随机 14/3/3** 划分，对应主仓库提交 ab5cc66 - ba4d883：
+200 样本、**随机 14/3/3** 划分：
 
 - `python/`：`train_digit.py`（PyTorch 微型 CNN 22.6k 参数 + LS/WD + 集成 + ONNX 导出）、`preprocess.py`、`quantize_onnx.py`、`export_ai_studio_data.py`、`check_samples.py`
 - `c/`：ST Edge AI 生成的 int8 C 模型（`Network/`）+ 运行时（`Middlewares/ST/AI/`）
@@ -94,16 +124,16 @@ flowchart TD
 
 ### 3.4 Model_v2 — 最新版模型（部署）
 
-300 样本、**固定划分 20/5/5**，对应主仓库提交 5553da2 / 56390ac / 314c0c0：
+300 样本、**固定划分 20/5/5**：
 
 - `python/`：`train_digit.py`（`--split fixed` + LS/WD + 5 seed 集成 + ONNX 导出）、`preprocess.py`、`eval_model.py`、`check_samples.py`、`export_ai_studio_data.py`、`quantize_onnx.py`
 - `c/`：**第二轮 `stedgeai generate-2` 生成的 int8 网络**（`Network/`，权重 22,928B）+ 运行时（`Middlewares/ST/AI/`）
-- `artifacts/`：`model_best.pt`（部署模型 seed 1042）、`models_seed{42,1042,2042,3042,4042}.pt`（5 个集成模型）、`model.onnx`/`model_best.onnx`/`model_best_int8.onnx`、`ai_studio_test.npz`、`split_fixed.json`、`summary_fixed_repeats.json`/`summary_fixed_ensemble.json`/`train_summary.json`、`training_log.csv`、`curves.png`/`confusion_matrix.png`/`preprocess_grid.png`、`识别可行性测试报告.md`（含第一轮 §1-§9 与第二轮 §10-§11）
+- `artifacts/`：`model_best.pt`（部署模型 seed 1042）、`model_final.pt`、`models_seed{42,1042,2042,3042,4042}.pt`（5 个集成模型）、`model.onnx`/`model_best.onnx`/`model_best_int8.onnx`、`ai_studio_test.npz`、`split_fixed.json`、`summary_fixed_repeats.json`/`summary_fixed_ensemble.json`/`train_summary.json`、`training_log.csv`、`curves.png`/`confusion_matrix.png`/`preprocess_grid.png`、`识别可行性测试报告.md`（含第一轮 §1-§9 与第二轮 §10-§11）
 - 结果：5 seed 测试 **81.2%±1.0%**、多数投票 **88.0%**；部署模型测试 **82.0%**（50 样本）；新字体（域外）识别 **94%**；int8 零精度损失（stedgeai validate：rmse=0、nse=1.0、cos=1.0）。
 
 ### 3.5 Python_Tools — 工具链（12 个）
 
-与主仓库 `tools/` 一致的最新版：
+最新版全套工具链：
 
 | 工具                          | 功能                                                                            |
 | ----------------------------- | ------------------------------------------------------------------------------- |
@@ -124,18 +154,27 @@ flowchart TD
 
 ### 3.6 AI_TCRT5000_CHAR_RECOGNITION — 最新单片机工程（部署固件）
 
-当前完整固件，可构建（对应主仓库提交 314c0c0 的第二轮 int8 固件）：
+当前完整固件，可构建（第二轮 int8 固件）：
 
 - `Core/Src/main.c`：采样主循环（TIM6 分时驱动 + ADC 采集 + 二进制帧上送）
 - `Core/Src/ai_scan.c`：**板载 AI 模块**——扫描缓冲/结束检测、预处理（黑边裁剪→重采样 32 行→归一化→int8 量化）、`stai_network_run` 推理、softmax、串口概率输出、数码管驱动
 - `Core/Src/seg_display.c`：单 LED 数码管驱动（PB0-PB7 共阴）
 - `Network/`：ST Edge AI 生成的 int8 网络（2026-08-27 generate-2，权重 22.4KB）
 - `Middlewares/ST/AI/`：ST Edge AI 运行时（头文件 + CM0+ 运行库）
-- `ref/AI_TRY_SEG/`：数码管参考工程
 - `AI_TCRT5000_CHAR_RECOGNITION.ioc`、`Drivers/`、`cmake/`、`CMakeLists.txt`、`CMakePresets.json`、`startup_stm32g0b1xx.s`、`STM32G0B1xx_FLASH.ld`：CubeMX 工程与 CMake 构建/调试配置
 - 资源占用：**Flash 53.10%**（69604 B / 128 KB）、**RAM 12.04%**（17752 B / 144 KB）
 
-> **模型更新说明**：更换模型只需替换 `Network/` 下 4 个文件（`network*.c/h`、`network_data.c/h`），`ai_scan.c` 无需改动（API 不变，输出反量化 scale 由 `network.h` 的 `STAI_NETWORK_OUT_1_SCALE` 宏自动更新）。
+> **模型更新说明**：更换模型只需替换 `Network/` 下全部 5 个文件（`network.c/h`、`network_data.c/h`、`network_details.h`），`ai_scan.c` 无需改动（API 不变，输出反量化 scale 由 `network.h` 的 `STAI_NETWORK_OUT_1_SCALE` 宏自动更新）。
+
+### 3.7 Kicad — 硬件电路（原理图 + PCB）
+
+KiCad 工程 `AI_PCB_SCH`（最新版），与单片机工程配套的硬件设计：
+
+- `AI_PCB_SCH.kicad_pro`：KiCad 工程文件
+- `AI_PCB_SCH.kicad_sch`：原理图
+- `AI_PCB_SCH.kicad_pcb`：PCB 版图
+- `AI_PCB_SCH.kicad_dru`：设计规则
+- `AI_PCB_SCH.kicad_prl`：工程本地设置（KiCad 自动生成，通常不纳入版本管理）
 
 ---
 

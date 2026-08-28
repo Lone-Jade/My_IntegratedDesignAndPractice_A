@@ -1,0 +1,5 @@
+(version 1)
+(rule stm32_lqfp64_ignore_mask_bridge
+  (constraint bridged_mask)
+  (severity ignore)
+  (condition "A.Type == 'Pad' && A.memberOfFootprint('Package_QFP:LQFP-64_10x10mm_P0.5mm')"))

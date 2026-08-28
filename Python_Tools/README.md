@@ -1,6 +1,6 @@
 # Python 工具（Python_Tools）— 最新版
 
-`tools/` 下 12 个工具（与主仓库 `AI_TRY_TCRT5000/tools/` 一致）：
+`tools/` 下 12 个工具：
 
 | 工具 | 功能 |
 | --- | --- |
